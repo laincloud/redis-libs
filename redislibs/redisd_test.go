@@ -27,7 +27,7 @@ func Test_ListNodes(t *testing.T) {
 	// if err := RemoveSlaveFromSentinel("127.0.0.1", "6002", "master_service", sentinel_addrs...); err == nil {
 	// 	t.Log("remove slave from sentinel pass")
 	// }
-	res, _ := GetMasterAddrByName("127.0.0.1", "5000", "master_service")
+	res, _ := GetMasterAddrByName("127.0.0.1", "26379", "mymaster")
 	fmt.Println(res)
 	// r, _ = GetMasterAddrByName("127.0.0.1", "5000", "master_service2")
 	// fmt.Println(r)
@@ -35,18 +35,18 @@ func Test_ListNodes(t *testing.T) {
 	// GetSlavesInSentinel("127.0.0.1", "5000", "master_service")
 	// GetSlavesInSentinel("127.0.0.1", "5000", "master_service2")
 
-	RoleStatus("127.0.0.1", "6001")
-	if role, status, err := RoleStatus("127.0.0.1", "6002"); err == nil {
-		fmt.Println(role, status)
-	}
+	// RoleStatus("127.0.0.1", "6001")
+	// if role, status, err := RoleStatus("127.0.0.1", "6002"); err == nil {
+	// 	fmt.Println(role, status)
+	// }
 
-	r, err := RedisNodeInfo("127.0.0.1", "6002")
+	r, err := RedisNodeInfo("127.0.0.1", "6379")
 	if err != nil {
 		fmt.Println("err:", err.Error())
 	}
 	fmt.Println(r)
 
-	masters, err := FetchMastersInSentinel("127.0.0.1", "5000")
+	masters, err := FetchMastersInSentinel("127.0.0.1", "26379")
 	if err != nil {
 		fmt.Println(err.Error())
 	}

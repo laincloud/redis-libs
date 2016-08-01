@@ -152,8 +152,10 @@ func (t *Talker) readLine() (string, error) {
 }
 
 func (t *Talker) readBulkString(size int) (string, error) {
-	buffer := make([]byte, size+2)
-	_, err := t.br.Read(buffer)
+	size = size + 2
+	buffer := make([]byte, size)
+	buffer, err := t.br.Peek(size)
+	t.br.Discard(size)
 	return strings.TrimRight(string(buffer), SYM_CRLF), err
 }
 

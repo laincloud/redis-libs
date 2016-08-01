@@ -1,6 +1,9 @@
 package redislibs
 
-import "strings"
+import (
+	"github.com/mijia/sweb/log"
+	"strings"
+)
 
 func RedisNodeInfo(host, port string) (map[string]map[string]string, error) {
 	t, err := buildTalker(host, port)
@@ -29,7 +32,11 @@ func redisNodeInfo(t *Talker) (map[string]map[string]string, error) {
 			continue
 		}
 		entry := strings.Split(info, ":")
-		sub[entry[0]] = entry[1]
+		if len(entry) == 2 {
+			sub[entry[0]] = entry[1]
+		} else {
+			log.Errorf("redis protocol error")
+		}
 	}
 	return res, nil
 }
