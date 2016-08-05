@@ -196,11 +196,10 @@ func (p *Pool) Finished(c IConn) {
 	if c == nil {
 		return
 	}
-	if conn, ok := c.(*Conn); ok {
-		if conn.err == nil && !p.closed {
-			p.put(c)
-			return
-		}
+	if c.ShouldBeClosed() || p.closed {
+		p.closeConn(c)
+		return
 	}
-	p.closeConn(c)
+	p.put(c)
+
 }

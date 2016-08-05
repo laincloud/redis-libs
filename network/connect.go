@@ -14,6 +14,7 @@ type IConn interface {
 	Read(b []byte) (int, error)
 	ReadAll() ([]byte, error)
 	Close() error
+	ShouldBeClosed() bool
 }
 
 type Conn struct {
@@ -22,12 +23,12 @@ type Conn struct {
 	err  error
 }
 
-func NewConnect(conn net.Conn, co *ConnectOption) *Conn {
+func NewConnect(conn net.Conn, co *ConnectOption) (*Conn, error) {
 	if conn == nil {
-		return nil
+		return nil, ErrConnNil
 	}
 	c := &Conn{conn: conn, cnop: co}
-	return c
+	return c, nil
 }
 
 func (c *Conn) GetConn() net.Conn {
@@ -96,4 +97,8 @@ func (c *Conn) Close() error {
 		return ErrConnNil
 	}
 	return c.conn.Close()
+}
+
+func (c *Conn) ShouldBeClosed() bool {
+	return c.err != nil
 }

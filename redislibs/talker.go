@@ -65,7 +65,8 @@ func BuildTalker(h, p string) (*Talker, error) {
 		return nil, err
 	}
 	co := network.NewConnectOption(5, 5, 1024)
-	t := &Talker{Conn: network.NewConnect(conn, co)}
+	cn, _ := network.NewConnect(conn, co)
+	t := &Talker{Conn: cn}
 	if conn != nil {
 		t.br = bufio.NewReader(t.GetConn())
 	}

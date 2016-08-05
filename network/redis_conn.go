@@ -30,10 +30,11 @@ type RedisConn struct {
 }
 
 func NewRedisConn(conn net.Conn, co *ConnectOption) (*RedisConn, error) {
-	if conn == nil {
-		return nil, NILL_VAL_ERR
+	cn, err := NewConnect(conn, co)
+	if err != nil {
+		return nil, err
 	}
-	r := &RedisConn{Conn: NewConnect(conn, co)}
+	r := &RedisConn{Conn: cn}
 	r.br = bufio.NewReader(r)
 	return r, nil
 }
@@ -103,7 +104,7 @@ func (r *RedisConn) readArray(line []byte) ([]byte, error) {
 		return nil, err
 	}
 	// Read `count` number of RESP objects in the array.
-	buf := make([]byte, 0, 0)
+	buf := make([]byte, 0)
 	buf = append(buf, line...)
 	for i := 0; i < count; i++ {
 		sub, err := r.readObject()
