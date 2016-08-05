@@ -2,7 +2,10 @@ package redislibs
 
 import (
 	"fmt"
+	"github.com/laincloud/redis-libs/network"
+	"net"
 	"testing"
+	"time"
 )
 
 func Test_ListNodes(t *testing.T) {
@@ -27,8 +30,8 @@ func Test_ListNodes(t *testing.T) {
 	// if err := RemoveSlaveFromSentinel("127.0.0.1", "6002", "master_service", sentinel_addrs...); err == nil {
 	// 	t.Log("remove slave from sentinel pass")
 	// }
-	res, _ := GetMasterAddrByName("127.0.0.1", "26379", "mymaster")
-	fmt.Println(res)
+	// res, _ := GetMasterAddrByName("127.0.0.1", "26379", "mymaster")
+	// fmt.Println(res)
 	// r, _ = GetMasterAddrByName("127.0.0.1", "5000", "master_service2")
 	// fmt.Println(r)
 
@@ -40,20 +43,45 @@ func Test_ListNodes(t *testing.T) {
 	// 	fmt.Println(role, status)
 	// }
 
-	r, err := RedisNodeInfo("127.0.0.1", "6379")
-	if err != nil {
-		fmt.Println("err:", err.Error())
-	}
-	fmt.Println(r)
+	// r, err := RedisNodeInfo("127.0.0.1", "6379")
+	// if err != nil {
+	// 	fmt.Println("err:", err.Error())
+	// }
+	// fmt.Println(r)
 
-	masters, err := FetchMastersInSentinel("127.0.0.1", "26379")
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	for _, m := range masters {
-		fmt.Println(m)
-	}
+	// masters, err := FetchMastersInSentinel("127.0.0.1", "26379")
+	// if err != nil {
+	// 	fmt.Println(err.Error())
+	// }
+	// for _, m := range masters {
+	// 	fmt.Println(m)
+	// }
 	// addr, _ := NewAddress(":5000")
 	// fmt.Println(addr)
 
+}
+
+func TestRedisConn(t *testing.T) {
+	c, _ := net.DialTimeout("tcp", "127.0.0.1:6001", time.Duration(10*time.Second))
+	rc, err := network.NewRedisConn(c, network.NewConnectOption(10, 10, 1024))
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+	cmds := []string{Pack_command("info"), Pack_command("get", "100"), Pack_command("keys", "111*")}
+	for _, cmd := range cmds {
+		rc.Write([]byte(cmd))
+		if res, err := rc.ReadAll(); err == nil {
+			fmt.Println("res:", string(res))
+		} else {
+			fmt.Println("err:", err.Error())
+		}
+	}
+	// cmd := Pack_command("keys", "*")
+	// for i := 0; i < 1000; i++ {
+	// 	rc.Write([]byte(cmd))
+	// 	if res, err := rc.ReadAll(); err == nil {
+	// 		fmt.Println("res:", res)
+	// 	}
+	// }
 }

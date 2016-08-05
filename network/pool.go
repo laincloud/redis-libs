@@ -2,9 +2,8 @@ package network
 
 import (
 	"errors"
-	"github.com/mijia/sweb/log"
 	"github.com/laincloud/redis-libs/utils"
-	"net"
+	"github.com/mijia/sweb/log"
 	"sync"
 	"time"
 )
@@ -14,16 +13,14 @@ var (
 	errPoolClosed  = errors.New("-Error pool closed\r\n")
 )
 
-type dialer func() (net.Conn, error)
-
-type connectOption struct {
+type ConnectOption struct {
 	readTimeOutSec time.Duration
 	wrteTimeOutSec time.Duration
 	bufferSize     int
 }
 
-func NewConnectOption(readTimeOut, wrteTimeOut, bs int) *connectOption {
-	return &connectOption{
+func NewConnectOption(readTimeOut, wrteTimeOut, bs int) *ConnectOption {
+	return &ConnectOption{
 		readTimeOutSec: time.Duration(readTimeOut) * time.Second,
 		wrteTimeOutSec: time.Duration(wrteTimeOut) * time.Second,
 		bufferSize:     bs,
@@ -31,7 +28,7 @@ func NewConnectOption(readTimeOut, wrteTimeOut, bs int) *connectOption {
 }
 
 type Pool struct {
-	co         *connectOption
+	co         *ConnectOption
 	idles      *utils.Queue
 	_dialer    dialer
 	activeSize int
@@ -47,13 +44,14 @@ type Pool struct {
 }
 
 type idleConn struct {
-	cn       *Conn
+	cn       IConn
 	idleTime time.Time
 }
 
-type connStateTestFunc func(c *Conn) bool
+type dialer func() (IConn, error)
+type connStateTestFunc func(c IConn) bool
 
-func NewConnectionPool(co *connectOption, _dialer dialer, maxActive, maxIdle, idleTimeOutSec int) *Pool {
+func NewConnectionPool(co *ConnectOption, _dialer dialer, maxActive, maxIdle, idleTimeOutSec int) *Pool {
 	idles := utils.NewQueue()
 	return &Pool{
 		co:             co,
@@ -77,19 +75,19 @@ func (p *Pool) SetDialer(newDialer dialer) {
 	p._dialer = newDialer
 }
 
-func (p *Pool) newConnect() (*Conn, error) {
+func (p *Pool) newConnect() (IConn, error) {
 	if p.active() {
 		if conn, err := p._dialer(); err != nil {
 			p.release()
 			return nil, err
 		} else {
-			return NewConnect(conn, p.co), nil
+			return conn, nil
 		}
 	}
 	return nil, errConnLimited
 }
 
-func (p *Pool) get() *Conn {
+func (p *Pool) get() IConn {
 	p.connMu.Lock()
 	defer p.connMu.Unlock()
 	for {
@@ -106,7 +104,7 @@ func (p *Pool) get() *Conn {
 
 }
 
-func (p *Pool) put(c *Conn) {
+func (p *Pool) put(c IConn) {
 	p.connMu.Lock()
 	defer p.connMu.Unlock()
 	if p.idles.Length() < p.maxIdle {
@@ -145,7 +143,7 @@ func (p *Pool) release() bool {
 	return false
 }
 
-func (p *Pool) fetchConn() (*Conn, error) {
+func (p *Pool) fetchConn() (IConn, error) {
 	for {
 		c := p.get()
 		if c == nil {
@@ -164,12 +162,12 @@ func (p *Pool) fetchConn() (*Conn, error) {
 	return p.newConnect()
 }
 
-func (p *Pool) closeConn(c *Conn) {
+func (p *Pool) closeConn(c IConn) {
 	c.Close()
 	p.release()
 }
 
-func (p *Pool) FetchConn() (*Conn, error) {
+func (p *Pool) FetchConn() (IConn, error) {
 	p.mu.Lock()
 	if p.closed {
 		return nil, errPoolClosed
@@ -194,13 +192,15 @@ func (p *Pool) Close() {
 	}
 }
 
-func (p *Pool) Finished(c *Conn) {
+func (p *Pool) Finished(c IConn) {
 	if c == nil {
 		return
 	}
-	if c.err != nil || p.closed {
-		p.closeConn(c)
-	} else {
-		p.put(c)
+	if conn, ok := c.(*Conn); ok {
+		if conn.err == nil && !p.closed {
+			p.put(c)
+			return
+		}
 	}
+	p.closeConn(c)
 }

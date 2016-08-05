@@ -6,7 +6,7 @@ import (
 )
 
 func RedisNodeInfo(host, port string) (map[string]map[string]string, error) {
-	t, err := buildTalker(host, port)
+	t, err := BuildTalker(host, port)
 	defer t.Close()
 	if err != nil {
 		return nil, err

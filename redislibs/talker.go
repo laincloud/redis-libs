@@ -48,47 +48,28 @@ type ITalker interface {
 }
 
 type Talker struct {
-	conn *network.Conn
-	br   *bufio.Reader
-	Host string
-	Port string
+	*network.Conn
+	br *bufio.Reader
 }
 
 func (t *Talker) Close() {
-	if t == nil || t.conn == nil {
+	if t == nil {
 		return
 	}
-	t.conn.Close()
+	t.Conn.Close()
 }
 
-func NewTalker(host, port string) *Talker {
-	t := &Talker{
-		Host: host,
-		Port: port,
-	}
-	return t
-}
-
-func buildTalker(h string, p string) (*Talker, error) {
-	t := NewTalker(h, p)
-	err := t.connect()
+func BuildTalker(h, p string) (*Talker, error) {
+	conn, err := net.DialTimeout("tcp", net.JoinHostPort(h, p), 5*time.Second)
 	if err != nil {
 		return nil, err
 	}
-	return t, nil
-}
-
-func (t *Talker) connect() error {
-	conn, err := net.DialTimeout("tcp", net.JoinHostPort(t.Host, t.Port), 5*time.Second)
-	if err != nil {
-		return err
-	}
 	co := network.NewConnectOption(5, 5, 1024)
-	t.conn = network.NewConnect(conn, co)
+	t := &Talker{Conn: network.NewConnect(conn, co)}
 	if conn != nil {
-		t.br = bufio.NewReader(t.conn)
+		t.br = bufio.NewReader(t.GetConn())
 	}
-	return nil
+	return t, nil
 }
 
 type ClusterNode struct {

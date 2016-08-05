@@ -7,7 +7,7 @@ type SentinelMaster struct {
 }
 
 func GetSlavesInSentinel(sentinel_host, sentinel_port, master string) ([]*Address, error) {
-	t, err := buildTalker(sentinel_host, sentinel_port)
+	t, err := BuildTalker(sentinel_host, sentinel_port)
 	defer t.Close()
 	if err != nil {
 		return nil, err
@@ -16,7 +16,7 @@ func GetSlavesInSentinel(sentinel_host, sentinel_port, master string) ([]*Addres
 }
 
 func GetMasterAddrByName(sentinel_host, sentinel_port, master string) (*Address, error) {
-	t, err := buildTalker(sentinel_host, sentinel_port)
+	t, err := BuildTalker(sentinel_host, sentinel_port)
 	defer t.Close()
 	if err != nil {
 		return nil, err
@@ -25,7 +25,7 @@ func GetMasterAddrByName(sentinel_host, sentinel_port, master string) (*Address,
 }
 
 func MonitorSentinel(sentinel_host, sentinel_port, mHost, mPort, master, quorum string) (string, error) {
-	t, err := buildTalker(sentinel_host, sentinel_port)
+	t, err := BuildTalker(sentinel_host, sentinel_port)
 	defer t.Close()
 	if err != nil {
 		return "", err
@@ -34,7 +34,7 @@ func MonitorSentinel(sentinel_host, sentinel_port, mHost, mPort, master, quorum 
 }
 
 func FetchMastersInSentinel(sentinel_host, sentinel_port string) ([]*SentinelMaster, error) {
-	t, err := buildTalker(sentinel_host, sentinel_port)
+	t, err := BuildTalker(sentinel_host, sentinel_port)
 	defer t.Close()
 	if err != nil {
 		return nil, err
@@ -43,7 +43,7 @@ func FetchMastersInSentinel(sentinel_host, sentinel_port string) ([]*SentinelMas
 }
 
 func ConfigSentinel(sentinel_host, sentinel_port string, configs ...string) (string, error) {
-	t, err := buildTalker(sentinel_host, sentinel_port)
+	t, err := BuildTalker(sentinel_host, sentinel_port)
 	defer t.Close()
 	if err != nil {
 		return "", err

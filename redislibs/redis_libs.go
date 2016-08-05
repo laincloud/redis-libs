@@ -15,7 +15,7 @@ const (
 )
 
 func SlaveOf(sHost, sPort, mHost, mPort string) (string, error) {
-	t, err := buildTalker(sHost, sPort)
+	t, err := BuildTalker(sHost, sPort)
 	defer t.Close()
 	if err != nil {
 		return "", err
@@ -24,7 +24,7 @@ func SlaveOf(sHost, sPort, mHost, mPort string) (string, error) {
 }
 
 func Slaves(mHost, mPort string) ([]*Address, error) {
-	t, err := buildTalker(mHost, mPort)
+	t, err := BuildTalker(mHost, mPort)
 	defer t.Close()
 	if err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ func Slaves(mHost, mPort string) ([]*Address, error) {
 }
 
 func Role(Host, Port string) (string, error) {
-	t, err := buildTalker(Host, Port)
+	t, err := BuildTalker(Host, Port)
 	defer t.Close()
 	if err != nil {
 		return "", err
@@ -43,7 +43,7 @@ func Role(Host, Port string) (string, error) {
 }
 
 func RoleStatus(Host, Port string) (string, string, error) {
-	t, err := buildTalker(Host, Port)
+	t, err := BuildTalker(Host, Port)
 	defer t.Close()
 	if err != nil {
 		return "", "", err
@@ -54,7 +54,7 @@ func RoleStatus(Host, Port string) (string, string, error) {
 // 1. slave no one
 // 2. sentinel reset *(master name in sentinel)
 func RemoveSlaveFromSentinel(sHost, sPort, master string, sentinel_addrs ...*Address) error {
-	t, err := buildTalker(sHost, sPort)
+	t, err := BuildTalker(sHost, sPort)
 	defer t.Close()
 	if err != nil {
 		return err
@@ -67,7 +67,7 @@ func RemoveSlaveFromSentinel(sHost, sPort, master string, sentinel_addrs ...*Add
 		return errors.New(m)
 	}
 	for _, addr := range sentinel_addrs {
-		t, err := buildTalker(addr.Host, addr.Port)
+		t, err := BuildTalker(addr.Host, addr.Port)
 		defer t.Close()
 		if err != nil {
 			return err

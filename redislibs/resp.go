@@ -89,11 +89,11 @@ func UnPackResponse(resp string) []string {
 }
 
 func (t *Talker) Talk(commands string) (string, error) {
-	err := t.conn.Write(commands)
+	err := t.Write([]byte(commands))
 	if err != nil {
 		return "", nil
 	}
-	o, err := t.ReadObject()
+	o, err := t.readObject()
 	if err != nil {
 		return "", err
 	}
@@ -104,14 +104,14 @@ func (t *Talker) Talk(commands string) (string, error) {
 }
 
 func (t *Talker) TalkForObject(commands string) (interface{}, error) {
-	err := t.conn.Write(commands)
+	err := t.Write([]byte(commands))
 	if err != nil {
 		return "", nil
 	}
-	return t.ReadObject()
+	return t.readObject()
 }
 
-func (t *Talker) ReadObject() (interface{}, error) {
+func (t *Talker) readObject() (interface{}, error) {
 	line, err := t.readLine()
 	if err != nil {
 		return nil, err
@@ -153,7 +153,6 @@ func (t *Talker) readLine() (string, error) {
 
 func (t *Talker) readBulkString(size int) (string, error) {
 	size = size + 2
-	buffer := make([]byte, size)
 	buffer, err := t.br.Peek(size)
 	t.br.Discard(size)
 	return strings.TrimRight(string(buffer), SYM_CRLF), err
@@ -172,7 +171,7 @@ func (t *Talker) readArray(line string) ([]interface{}, error) {
 	// Read `count` number of RESP objects in the array.
 	array := make([]interface{}, count, count)
 	for i := 0; i < count; i++ {
-		buf, err := t.ReadObject()
+		buf, err := t.readObject()
 		if err != nil {
 			return nil, err
 		}

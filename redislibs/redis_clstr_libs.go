@@ -11,7 +11,7 @@ import (
 )
 
 func ListNodesInCluster(Host, Port string) ([]*ClusterNode, *ClusterNode, error) {
-	t, err := buildTalker(Host, Port)
+	t, err := BuildTalker(Host, Port)
 	defer t.Close()
 	if err != nil {
 		return nil, nil, err
@@ -24,7 +24,7 @@ func ListMasterNodes(cs_nodes []*ClusterNode) []*ClusterNode {
 }
 
 func GetClusterInfo(Host, Port string) (map[string]string, error) {
-	t, err := buildTalker(Host, Port)
+	t, err := BuildTalker(Host, Port)
 	defer t.Close()
 	if err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ func GetClusterInfo(Host, Port string) (map[string]string, error) {
 }
 
 func StartClusterSingle(Host, Port string) (string, error) {
-	t, err := buildTalker(Host, Port)
+	t, err := BuildTalker(Host, Port)
 	defer t.Close()
 	if err != nil {
 		return "", err
@@ -72,7 +72,7 @@ func DestoryCluster(Host string, Port string) (string, error) {
 			res = -1
 			continue
 		}
-		node_t, err := buildTalker(node.Host, node.Port)
+		node_t, err := BuildTalker(node.Host, node.Port)
 		defer node_t.Close()
 		if err != nil {
 			res = -1
@@ -92,7 +92,7 @@ func DestoryCluster(Host string, Port string) (string, error) {
 }
 
 func JoinToCluster(Host, Port, cls_Host, cls_Port string) (string, error) {
-	t, err := buildTalker(Host, Port)
+	t, err := BuildTalker(Host, Port)
 	defer t.Close()
 	if err != nil {
 		return "", err
@@ -110,7 +110,7 @@ func JoinToCluster(Host, Port, cls_Host, cls_Port string) (string, error) {
 }
 
 func ReplicateToClusterNode(Host, Port, mstr_Host, mstr_Port string) (string, error) {
-	t, err := buildTalker(Host, Port)
+	t, err := BuildTalker(Host, Port)
 	defer t.Close()
 	if err != nil {
 		return "", err
@@ -157,7 +157,7 @@ func ReplicateToClusterNode(Host, Port, mstr_Host, mstr_Port string) (string, er
 }
 
 func QuitEmptyFromCluster(Host, Port string) (string, error) {
-	t, err := buildTalker(Host, Port)
+	t, err := BuildTalker(Host, Port)
 	defer t.Close()
 	if err != nil {
 		return "", err
@@ -175,7 +175,7 @@ func QuitEmptyFromCluster(Host, Port string) (string, error) {
 }
 
 func QuitFromClusterAndBalaceItsSlots(Host, Port string) (string, error) {
-	t, err := buildTalker(Host, Port)
+	t, err := BuildTalker(Host, Port)
 	defer t.Close()
 	if err != nil {
 		return "", err
@@ -202,7 +202,7 @@ func QuitFromClusterAndBalaceItsSlots(Host, Port string) (string, error) {
 		if node.Node_id == myself.Node_id {
 			continue
 		}
-		dst_t, err := buildTalker(node.Host, node.Port)
+		dst_t, err := BuildTalker(node.Host, node.Port)
 		defer dst_t.Close()
 		if err != nil {
 			return "", err
@@ -220,7 +220,7 @@ func QuitFromClusterAndBalaceItsSlots(Host, Port string) (string, error) {
 }
 
 func FixClusterSlotsSingle(Host, Port string) (string, error) {
-	t, err := buildTalker(Host, Port)
+	t, err := BuildTalker(Host, Port)
 	defer t.Close()
 	if err != nil {
 		return "", err
@@ -248,7 +248,7 @@ func FixClusterSlotsSingle(Host, Port string) (string, error) {
 
 func MigratingNodeSlotsFix(Host, Port string) (string, error) {
 
-	t, err := buildTalker(Host, Port)
+	t, err := BuildTalker(Host, Port)
 	defer t.Close()
 	if err != nil {
 		return "", err
@@ -263,7 +263,7 @@ func MigratingNodeSlotsFix(Host, Port string) (string, error) {
 
 func MigratingClusterSlotsFix(Host, Port string) (string, error) {
 	log.Infof("node %s:%s start to fix slots' migrating or importing state of cluster", Host, Port)
-	t, err := buildTalker(Host, Port)
+	t, err := BuildTalker(Host, Port)
 	defer t.Close()
 	if err != nil {
 		return "", err
@@ -276,7 +276,7 @@ func MigratingClusterSlotsFix(Host, Port string) (string, error) {
 	var selfNode *ClusterNode
 	var T *Talker
 	for _, node := range cs_nodes {
-		T, err = buildTalker(node.Host, node.Port)
+		T, err = BuildTalker(node.Host, node.Port)
 		defer T.Close()
 		if err != nil {
 			failed = append(failed, node)
@@ -309,7 +309,7 @@ func FixClusterSlotsMuiltAddr(addrs ...*Address) (string, error) {
 		return "", nil
 	}
 
-	t, err := buildTalker(addrs[0].Host, addrs[0].Port)
+	t, err := BuildTalker(addrs[0].Host, addrs[0].Port)
 	defer t.Close()
 	if err != nil {
 		return "", err
@@ -347,7 +347,7 @@ func FixClusterSlotsMuiltAddr(addrs ...*Address) (string, error) {
 
 	slots := balanceSlotsToOthers(len(addrs), unAssigned_slots)
 	for i, node := range nodes {
-		node_t, err := buildTalker(node.Host, node.Port)
+		node_t, err := BuildTalker(node.Host, node.Port)
 		defer node_t.Close()
 		if err != nil {
 			return "", err
@@ -369,7 +369,7 @@ func StartClusterMutilple(addrs ...*Address) (string, error) {
 	}
 	mstr_size := len(addrs)
 	node_slots := initAndBalanceSlots(mstr_size)
-	t, err := buildTalker(addrs[0].Host, addrs[0].Port)
+	t, err := BuildTalker(addrs[0].Host, addrs[0].Port)
 	defer t.Close()
 	if err != nil {
 		return "", err
@@ -383,7 +383,7 @@ func StartClusterMutilple(addrs ...*Address) (string, error) {
 	var node_t *Talker
 	for i := 1; i < mstr_size; i++ {
 		addr = addrs[i]
-		node_t, err = buildTalker(addr.Host, addr.Port)
+		node_t, err = BuildTalker(addr.Host, addr.Port)
 		defer node_t.Close()
 		if err != nil {
 			return "", err
@@ -408,7 +408,7 @@ func StartClusterMutilple(addrs ...*Address) (string, error) {
 }
 
 func JoinToClusterAndBalanceSlots(Host, Port, clsHost, clsPort string) (string, error) {
-	src_t, err := buildTalker(Host, Port)
+	src_t, err := BuildTalker(Host, Port)
 	defer src_t.Close()
 	if err != nil {
 		return "", err
@@ -422,7 +422,7 @@ func JoinToClusterAndBalanceSlots(Host, Port, clsHost, clsPort string) (string, 
 		log.Warnf(info)
 		return info, nil
 	}
-	cls_t, err := buildTalker(clsHost, clsPort)
+	cls_t, err := BuildTalker(clsHost, clsPort)
 	defer cls_t.Close()
 	if err != nil {
 		return "", err
@@ -461,7 +461,7 @@ func JoinToClusterAndBalanceSlots(Host, Port, clsHost, clsPort string) (string, 
 	for i, size := range sizes[:cls_mstr_size] {
 		node = master_nodes[i]
 		log.Infof("migrate slots from %s:%s to %s:%s", node.Host, node.Port, Host, Port)
-		slts_t, err := buildTalker(node.Host, node.Port)
+		slts_t, err := BuildTalker(node.Host, node.Port)
 		defer slts_t.Close()
 		if err != nil {
 			return "", err
@@ -477,13 +477,13 @@ func JoinToClusterAndBalanceSlots(Host, Port, clsHost, clsPort string) (string, 
 }
 
 func MigrateAllDataCorssCluster(srcHost, srcPort, dstHost, dstPort string) (string, error) {
-	src_t, err := buildTalker(srcHost, srcPort)
+	src_t, err := BuildTalker(srcHost, srcPort)
 	defer src_t.Close()
 	if err != nil {
 		return "", err
 	}
 
-	dst_t, err := buildTalker(dstHost, dstPort)
+	dst_t, err := BuildTalker(dstHost, dstPort)
 	defer dst_t.Close()
 	if err != nil {
 		return "", err
@@ -510,7 +510,7 @@ func MigrateAllDataCorssCluster(srcHost, srcPort, dstHost, dstPort string) (stri
 	err_occrd := false
 	var dst_addr Address
 	for _, node := range src_masters {
-		src_mt, err := buildTalker(node.Host, node.Port)
+		src_mt, err := BuildTalker(node.Host, node.Port)
 		defer src_mt.Close()
 		if err != nil {
 			return "", err
@@ -531,7 +531,7 @@ func MigrateAllDataCorssCluster(srcHost, srcPort, dstHost, dstPort string) (stri
 }
 
 func AddSlotInNode(Host, Port string, slots ...int) (string, error) {
-	t, err := buildTalker(Host, Port)
+	t, err := BuildTalker(Host, Port)
 	defer t.Close()
 	if err != nil {
 		return "", err
@@ -544,7 +544,7 @@ func AddSlotInNode(Host, Port string, slots ...int) (string, error) {
 }
 
 func DeleteSlotInNode(Host, Port string, slots ...int) (string, error) {
-	t, err := buildTalker(Host, Port)
+	t, err := BuildTalker(Host, Port)
 	defer t.Close()
 	if err != nil {
 		return "", err
@@ -561,7 +561,7 @@ func DeleteSlotInNode(Host, Port string, slots ...int) (string, error) {
 }
 
 func MigrateSlotsBelongToCluster(srcHost, srcPort, dstHost, dstPort string, slots ...int) (string, error) {
-	src_t, err := buildTalker(srcHost, srcPort)
+	src_t, err := BuildTalker(srcHost, srcPort)
 	defer src_t.Close()
 	if err != nil {
 		return "", err
@@ -575,7 +575,7 @@ func MigrateSlotsBelongToCluster(srcHost, srcPort, dstHost, dstPort string, slot
 		return "", errors.New(fmt.Sprintf("some or all slots are not belongs to node %s %s\n", src.Host, src.Port))
 	}
 
-	dst_t, err := buildTalker(dstHost, dstPort)
+	dst_t, err := BuildTalker(dstHost, dstPort)
 	defer dst_t.Close()
 	if err != nil {
 		return "", err
@@ -601,7 +601,7 @@ func MigrateSlotsBelongToCluster(srcHost, srcPort, dstHost, dstPort string, slot
 }
 
 func MigrateSlotsDataCorssCluster(srcHost, srcPort, dstHost, dstPort string, slots ...int) (string, error) {
-	src_t, err := buildTalker(srcHost, srcPort)
+	src_t, err := BuildTalker(srcHost, srcPort)
 	defer src_t.Close()
 	if err != nil {
 		return "", err
@@ -691,7 +691,7 @@ func quitEmptyNodeFromCluster(t *Talker, cs_nodes []*ClusterNode, myself *Cluste
 			continue
 		}
 		//Others forget me
-		node_t, err = buildTalker(node.Host, node.Port)
+		node_t, err = BuildTalker(node.Host, node.Port)
 		defer node_t.Close()
 		if err != nil {
 			failed = append(failed, node)
