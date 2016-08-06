@@ -1,12 +1,13 @@
 package redislibs
 
+import "strings"
+
 func unAssignedSlots(Assigned_slots []int) []int {
 	size := SLOT_COUNT - len(Assigned_slots)
 	unAssigned_slots := make([]int, size, size)
 	start := 0
 	p := 0
 	for _, slot := range Assigned_slots {
-
 		if slot != start {
 			for start < slot {
 				unAssigned_slots[p] = start
@@ -96,4 +97,16 @@ func getAssignedSlots(cs_nodes []*ClusterNode) [][]int {
 		Assigned_slots[i] = node.Assigned_slots
 	}
 	return Assigned_slots
+}
+
+func stringToArray(resp string) []string {
+	values := strings.Split(resp, SYM_CRLF)
+	args := make([]string, 0, len(values))
+	for _, v := range values {
+		if v == "" || strings.HasPrefix(v, SYM_STAR) || strings.HasPrefix(v, SYM_DOLLAR) {
+			continue
+		}
+		args = append(args, v)
+	}
+	return args
 }

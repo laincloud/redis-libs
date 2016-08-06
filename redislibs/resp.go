@@ -21,7 +21,6 @@ const (
 )
 
 const (
-	SYM_NORMAL = "+"
 	SYM_ERROR  = "-"
 	SYM_STAR   = "*"
 	SYM_DOLLAR = "$"
@@ -76,31 +75,13 @@ func Pack_command(args ...string) string {
 	return buf
 }
 
-func UnPackResponse(resp string) []string {
-	values := strings.Split(resp, SYM_CRLF)
-	args := make([]string, 0, len(values))
-	for _, v := range values {
-		if v == "" || strings.HasPrefix(v, SYM_STAR) || strings.HasPrefix(v, SYM_DOLLAR) {
-			continue
-		}
-		args = append(args, v)
-	}
-	return args
-}
-
-func (t *Talker) Talk(commands string) (string, error) {
+func (t *Talker) TalkRaw(commands string) (string, error) {
 	err := t.Write([]byte(commands))
 	if err != nil {
 		return "", nil
 	}
-	o, err := t.readObject()
-	if err != nil {
-		return "", err
-	}
-	if res, ok := o.(string); ok {
-		return res, nil
-	}
-	return "", errors.New("Type Faltal Error")
+	res, err := t.Conn.ReadAll()
+	return string(res), err
 }
 
 func (t *Talker) TalkForObject(commands string) (interface{}, error) {

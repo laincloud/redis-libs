@@ -52,7 +52,7 @@ func ConfigSentinel(sentinel_host, sentinel_port string, configs ...string) (str
 }
 
 func monitorSentinel(t *Talker, mHost, mPort, master, quorum string) (string, error) {
-	return t.Talk(Pack_command("SENTINEL", "MONITOR", master, mHost, mPort, quorum))
+	return t.TalkRaw(Pack_command("SENTINEL", "MONITOR", master, mHost, mPort, quorum))
 }
 
 func getSlavesInSentinel(t *Talker, master string) ([]*Address, error) {
@@ -86,13 +86,13 @@ func getMasterAddrByName(t *Talker, master string) (*Address, error) {
 }
 
 func sentinelReset(t *Talker, master string) (string, error) {
-	return t.Talk(Pack_command("SENTINEL", "reset", master))
+	return t.TalkRaw(Pack_command("SENTINEL", "reset", master))
 }
 
 func configSentinel(t *Talker, configs ...string) (string, error) {
 	params := []string{"SENTINEL", "set"}
 	params = append(params, configs...)
-	return t.Talk(Pack_command(params...))
+	return t.TalkRaw(Pack_command(params...))
 }
 
 func fetchMastersInSentinel(t *Talker) ([]*SentinelMaster, error) {

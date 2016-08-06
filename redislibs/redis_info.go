@@ -15,7 +15,7 @@ func RedisNodeInfo(host, port string) (map[string]map[string]string, error) {
 }
 
 func redisNodeInfo(t *Talker) (map[string]map[string]string, error) {
-	resp, err := t.Talk(Pack_command("info"))
+	resp, err := t.TalkRaw(Pack_command("info"))
 	if err != nil {
 		return nil, err
 	}

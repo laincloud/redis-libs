@@ -43,7 +43,7 @@ func (addr *Address) String() string {
 
 type ITalker interface {
 	Connect()
-	Talk(commands string) string
+	TalkRaw(commands string) string
 	Close()
 }
 

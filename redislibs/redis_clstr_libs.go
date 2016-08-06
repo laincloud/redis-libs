@@ -3,8 +3,8 @@ package redislibs
 import (
 	"errors"
 	"fmt"
-	"github.com/mijia/sweb/log"
 	. "github.com/laincloud/redis-libs/utils"
+	"github.com/mijia/sweb/log"
 	"strconv"
 	"strings"
 	"time"
@@ -630,7 +630,7 @@ func MigrateSlotsDataCorssCluster(srcHost, srcPort, dstHost, dstPort string, slo
  */
 
 func listNodesInCluster(t *Talker) ([]*ClusterNode, *ClusterNode, error) {
-	r, err := t.Talk(COMMAND_CLUSTER_NODES)
+	r, err := t.TalkRaw(COMMAND_CLUSTER_NODES)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -669,11 +669,11 @@ func listMasterNodes(cs_nodes []*ClusterNode) []*ClusterNode {
 }
 
 func getClusterInfo(t *Talker) (map[string]string, error) {
-	resp, err := t.Talk(Pack_command("CLUSTER", "INFO"))
+	resp, err := t.TalkRaw(Pack_command("CLUSTER", "INFO"))
 	if err != nil {
 		return nil, err
 	}
-	res := UnPackResponse(resp)
+	res := stringToArray(resp)
 	infos := make(map[string]string)
 	for _, r := range res {
 		kv := strings.Split(r, ":")
@@ -742,7 +742,7 @@ func migrateSlotData(t *Talker, dstHost string, dstPort string, slot int) (strin
 		key_count += len(keys)
 		for _, key := range keys {
 			k := key.(string)
-			m, err := t.Talk(Pack_command("MIGRATE", dstHost, dstPort, k, strconv.Itoa(REDIS_DB_NO), strconv.Itoa(TIMEOUT_MIGRATE)))
+			m, err := t.TalkRaw(Pack_command("MIGRATE", dstHost, dstPort, k, strconv.Itoa(REDIS_DB_NO), strconv.Itoa(TIMEOUT_MIGRATE)))
 			if err != nil {
 				log.Infof("key %s migrate Resp:%s", k, m)
 				keys_err = append(keys_err, k)
@@ -791,34 +791,34 @@ func fixMigratingSlots(t *Talker, cs_nodes ...*ClusterNode) (string, error) {
 }
 
 func joinToCluster(t *Talker, cls_Host, cls_Port string) (string, error) {
-	return t.Talk(Pack_command("cluster", "meet", cls_Host, cls_Port))
+	return t.TalkRaw(Pack_command("cluster", "meet", cls_Host, cls_Port))
 }
 
 func quitFromCluster(t *Talker, nodeid string) (string, error) {
-	return t.Talk(Pack_command("cluster", "forget", nodeid))
+	return t.TalkRaw(Pack_command("cluster", "forget", nodeid))
 }
 func replicateToNode(t *Talker, master_nodeid string) (string, error) {
-	return t.Talk(Pack_command("cluster", "replicate", master_nodeid))
+	return t.TalkRaw(Pack_command("cluster", "replicate", master_nodeid))
 }
 
 func setSlotInMigrating(t *Talker, dstNodeId string, slot int) (string, error) {
-	return t.Talk(Pack_command("CLUSTER", "SETSLOT", strconv.Itoa(slot), "MIGRATING", dstNodeId))
+	return t.TalkRaw(Pack_command("CLUSTER", "SETSLOT", strconv.Itoa(slot), "MIGRATING", dstNodeId))
 }
 
 func setSlotInImpoerting(t *Talker, srcNodeId string, slot int) (string, error) {
-	return t.Talk(Pack_command("CLUSTER", "SETSLOT", strconv.Itoa(slot), "importING", srcNodeId))
+	return t.TalkRaw(Pack_command("CLUSTER", "SETSLOT", strconv.Itoa(slot), "importING", srcNodeId))
 }
 
 func setSlotInStable(t *Talker, slot int) (string, error) {
-	return t.Talk(Pack_command("CLUSTER", "SETSLOT", strconv.Itoa(slot), "STABLE"))
+	return t.TalkRaw(Pack_command("CLUSTER", "SETSLOT", strconv.Itoa(slot), "STABLE"))
 }
 
 func setSlotToNode(t *Talker, dstNodeId string, slot int) (string, error) {
-	return t.Talk(Pack_command("CLUSTER", "SETSLOT", strconv.Itoa(slot), "NODE", dstNodeId))
+	return t.TalkRaw(Pack_command("CLUSTER", "SETSLOT", strconv.Itoa(slot), "NODE", dstNodeId))
 }
 
 func flushAllData(t *Talker) (string, error) {
-	return t.Talk(Pack_command("FLUSHALL"))
+	return t.TalkRaw(Pack_command("FLUSHALL"))
 }
 
 func clusterReset(t *Talker) (string, error) {
@@ -826,7 +826,7 @@ func clusterReset(t *Talker) (string, error) {
 	if err != nil {
 		return m, err
 	}
-	return t.Talk(Pack_command("CLUSTER", "RESET"))
+	return t.TalkRaw(Pack_command("CLUSTER", "RESET"))
 }
 
 func deleteSlotNode(t *Talker, slots []int) (string, error) {
@@ -839,7 +839,7 @@ func deleteSlotNode(t *Talker, slots []int) (string, error) {
 	for _, v := range slots {
 		args = append(args, strconv.Itoa(v))
 	}
-	m, err := t.Talk(Pack_command(args...))
+	m, err := t.TalkRaw(Pack_command(args...))
 	if err != nil {
 		return m, err
 	}
@@ -856,7 +856,7 @@ func addSlotNode(t *Talker, slots []int) (string, error) {
 	for _, v := range slots {
 		args = append(args, strconv.Itoa(v))
 	}
-	m, err := t.Talk(Pack_command(args...))
+	m, err := t.TalkRaw(Pack_command(args...))
 	if err != nil {
 		return m, err
 	}

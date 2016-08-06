@@ -3,14 +3,13 @@ package network
 import (
 	"errors"
 	"github.com/laincloud/redis-libs/utils"
-	"github.com/mijia/sweb/log"
 	"sync"
 	"time"
 )
 
 var (
-	errConnLimited = errors.New("-Error connection limited\r\n")
-	errPoolClosed  = errors.New("-Error pool closed\r\n")
+	ErrConnLimited = errors.New("-Error connection limited\r\n")
+	ErrPoolClosed  = errors.New("-Error pool closed\r\n")
 )
 
 type ConnectOption struct {
@@ -84,7 +83,7 @@ func (p *Pool) newConnect() (IConn, error) {
 			return conn, nil
 		}
 	}
-	return nil, errConnLimited
+	return nil, ErrConnLimited
 }
 
 func (p *Pool) get() IConn {
@@ -170,11 +169,10 @@ func (p *Pool) closeConn(c IConn) {
 func (p *Pool) FetchConn() (IConn, error) {
 	p.mu.Lock()
 	if p.closed {
-		return nil, errPoolClosed
+		return nil, ErrPoolClosed
 	}
 	p.mu.Unlock()
 	c, err := p.fetchConn()
-	log.Debugf("%d::%d::%d\n", p.idles.Length(), p.activeSize, p.maxActive)
 	return c, err
 }
 

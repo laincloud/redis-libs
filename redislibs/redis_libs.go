@@ -78,11 +78,11 @@ func RemoveSlaveFromSentinel(sHost, sPort, master string, sentinel_addrs ...*Add
 }
 
 func slaves(t *Talker) ([]*Address, error) {
-	resp, err := t.Talk(Pack_command("INFO", "Replication"))
+	resp, err := t.TalkRaw(Pack_command("INFO", "Replication"))
 	if err != nil {
 		return nil, err
 	}
-	result := UnPackResponse(resp)
+	result := stringToArray(resp)
 	infos := make(map[string]string)
 	for _, r := range result {
 		kv := strings.Split(r, ":")
@@ -118,7 +118,7 @@ func slaves(t *Talker) ([]*Address, error) {
 }
 
 func slaveOf(t *Talker, mHost, mPort string) (string, error) {
-	return t.Talk(Pack_command("slaveof", mHost, mPort))
+	return t.TalkRaw(Pack_command("slaveof", mHost, mPort))
 }
 
 func role_status(t *Talker) (string, string, error) {
