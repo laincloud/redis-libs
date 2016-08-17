@@ -48,7 +48,7 @@ type ITalker interface {
 }
 
 type Talker struct {
-	*network.Conn
+	network.IConn
 	br *bufio.Reader
 }
 
@@ -56,7 +56,7 @@ func (t *Talker) Close() {
 	if t == nil {
 		return
 	}
-	t.Conn.Close()
+	t.IConn.Close()
 }
 
 func BuildTalker(h, p string) (*Talker, error) {
@@ -64,11 +64,10 @@ func BuildTalker(h, p string) (*Talker, error) {
 	if err != nil {
 		return nil, err
 	}
-	co := network.NewConnectOption(5, 5, 1024)
-	cn, _ := network.NewConnect(conn, co)
-	t := &Talker{Conn: cn}
+	cn, _ := network.NewRedisConn(conn)
+	t := &Talker{IConn: cn}
 	if conn != nil {
-		t.br = bufio.NewReader(t.GetConn())
+		t.br = bufio.NewReader(t)
 	}
 	return t, nil
 }

@@ -17,8 +17,8 @@ type RedisConn struct {
 	*RedisReader
 }
 
-func NewRedisConn(conn net.Conn, co *ConnectOption) (*RedisConn, error) {
-	cn, err := NewConnect(conn, co)
+func NewRedisConn(conn net.Conn) (*RedisConn, error) {
+	cn, err := NewConn(conn)
 	if err != nil {
 		return nil, err
 	}
@@ -28,6 +28,5 @@ func NewRedisConn(conn net.Conn, co *ConnectOption) (*RedisConn, error) {
 }
 
 func (r *RedisConn) ReadAll() ([]byte, error) {
-	// r.conn.SetReadDeadline(time.Now().Add(r.cnop.readTimeOutSec))
 	return r.ReadObject()
 }

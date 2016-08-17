@@ -10,95 +10,69 @@ import (
 var ErrConnNil = errors.New("Connector is Nil")
 
 type IConn interface {
-	Write(msg []byte) error
-	Read(b []byte) (int, error)
+	net.Conn
 	ReadAll() ([]byte, error)
-	Close() error
 	ShouldBeClosed() bool
 }
 
 type Conn struct {
-	conn net.Conn
-	cnop *ConnectOption
-	err  error
+	net.Conn
+	err error
 }
 
-func NewConnect(conn net.Conn, co *ConnectOption) (*Conn, error) {
+func NewConn(conn net.Conn) (*Conn, error) {
 	if conn == nil {
 		return nil, ErrConnNil
 	}
-	c := &Conn{conn: conn, cnop: co}
+	c := &Conn{Conn: conn}
 	return c, nil
 }
 
-func (c *Conn) GetConn() net.Conn {
-	return c.conn
-}
-
-func (c *Conn) Write(b []byte) error {
-	if c == nil {
-		return ErrConnNil
-	}
-	c.conn.SetWriteDeadline(time.Now().Add(c.cnop.wrteTimeOutSec))
-	size := len(b)
-	from := 0
-	for {
-		n, err := c.conn.Write(b[from:])
-		if err != nil {
-			if err == syscall.EAGAIN || err == syscall.EWOULDBLOCK {
-				time.Sleep(10 * time.Millisecond)
-				continue
-			}
-			c.err = err
-			break
-		}
-		from += n
-		if from == size {
-			break
-		}
-	}
-	return c.err
+func (c *Conn) Write(b []byte) (int, error) {
+	n, err := c.Conn.Write(b)
+	c.err = err
+	return n, c.err
 }
 
 func (c *Conn) Read(b []byte) (int, error) {
-	if c == nil {
-		return 0, ErrConnNil
-	}
-	c.conn.SetReadDeadline(time.Now().Add(c.cnop.wrteTimeOutSec))
-	n, err := c.conn.Read(b)
+	n, err := c.Conn.Read(b)
 	c.err = err
-	return n, err
+	return n, c.err
 }
 
 func (c *Conn) ReadAll() ([]byte, error) {
-	if c == nil {
-		return nil, ErrConnNil
-	}
-	c.conn.SetReadDeadline(time.Now().Add(c.cnop.readTimeOutSec))
-	res := make([]byte, 0, 0)
-	bufferSize := c.cnop.bufferSize
-	buffer := make([]byte, bufferSize)
-	for {
-		n, err := c.Read(buffer)
-		if err != nil {
-			c.err = err
-			return res, err
-		}
-		res = append(res, buffer[:n]...)
-		if n < bufferSize {
-			break
-		}
-	}
-	return res, nil
-}
-
-func (c *Conn) Close() error {
-	if c == nil {
-		return ErrConnNil
-	}
-	return c.conn.Close()
+	return nil, syscall.ENOSYS
 }
 
 func (c *Conn) ShouldBeClosed() bool {
 	return c.err != nil
+}
+
+type TimeoutConn struct {
+	*Conn
+	cnop *ConnectOption
+}
+
+func NewTimeoutConn(conn net.Conn, cnop *ConnectOption) (*TimeoutConn, error) {
+	cn, err := NewConn(conn)
+	if err != nil {
+		return nil, err
+	}
+	c := &TimeoutConn{Conn: cn, cnop: cnop}
+	return c, nil
+}
+
+func (c *TimeoutConn) Write(b []byte) (int, error) {
+	c.SetWriteDeadline(time.Now().Add(c.cnop.wrteTimeOutSec))
+	return c.Conn.Write(b)
+}
+
+func (c *TimeoutConn) Read(b []byte) (int, error) {
+	c.SetReadDeadline(time.Now().Add(c.cnop.wrteTimeOutSec))
+	return c.Conn.Read(b)
+}
+
+func (c *TimeoutConn) ReadAll() ([]byte, error) {
+	c.SetReadDeadline(time.Now().Add(c.cnop.readTimeOutSec))
+	return c.ReadAll()
 }

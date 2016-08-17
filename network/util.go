@@ -19,6 +19,31 @@ const (
 	SYM_CRLF = "\r\n"
 )
 
+type FdReader struct {
+	fd int
+}
+
+func NewFdReader(fd int) *FdReader {
+	return &FdReader{fd: fd}
+}
+
+func (f *FdReader) Read(b []byte) (n int, err error) {
+	for {
+		n, err = syscall.Read(f.fd, b)
+		if err != nil {
+			n = 0
+			if err == syscall.EAGAIN {
+				return n, err
+			}
+		}
+		break
+	}
+	if _, ok := err.(syscall.Errno); ok {
+		err = os.NewSyscallError("read", err)
+	}
+	return
+}
+
 func SyscallWrite(fd int, b *[]byte, aeBufferSize int) error {
 	from := 0
 	to := 0
@@ -43,31 +68,6 @@ func SyscallWrite(fd int, b *[]byte, aeBufferSize int) error {
 		}
 	}
 	return nil
-}
-
-type FdReader struct {
-	fd int
-}
-
-func NewFdReader(fd int) *FdReader {
-	return &FdReader{fd: fd}
-}
-
-func (f *FdReader) Read(b []byte) (n int, err error) {
-	for {
-		n, err = syscall.Read(f.fd, b)
-		if err != nil {
-			n = 0
-			if err == syscall.EAGAIN {
-				return n, err
-			}
-		}
-		break
-	}
-	if _, ok := err.(syscall.Errno); ok {
-		err = os.NewSyscallError("read", err)
-	}
-	return
 }
 
 func SyscallRead(fd int, aeBufferSize int) ([]byte, error) {
